@@ -1241,7 +1241,7 @@ send_ip6_ping (vlib_main_t * vm,
 			 id_host, data_len, burst, verbose, 1 /* is_ip6 */ );
 }
 
-static send_ip46_ping_result_t
+send_ip46_ping_result_t
 send_ip4_ping (vlib_main_t * vm,
 	       u32 table_id, ip4_address_t * pa4,
 	       u32 sw_if_index, u16 seq_host, u16 id_host, u16 data_len,
@@ -1677,9 +1677,12 @@ ping_cli_init (vlib_main_t * vm)
 			  ip4_icmp_echo_request_node.index);
   icmp6_register_type (vm, ICMP6_echo_request,
 		       ip6_icmp_echo_request_node.index);
+  
+  ping_plugin_api_hookup(vm);
 
   return 0;
 }
+
 
 VLIB_INIT_FUNCTION (ping_cli_init);
 
