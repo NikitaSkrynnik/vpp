@@ -2,14 +2,15 @@
 
 # COPY . /vpp
 # WORKDIR /vpp
-# RUN apt-get update && apt-get install -y make sudo tzdata iproute2
+# RUN apt-get update && apt-get install -y make sudo tzdata
 # RUN make install-dep
+# RUN make pkg-deb
 
-FROM nikitaxored/vpp-deps:3
+FROM nikitaxored/vpp-deps:4
 
 COPY . /vpp
 WORKDIR /vpp
-# RUN make pkg-deb
-# RUN sudo dpkg -i build-root/*.deb
+
+# RUN dpkg -i build-root/*.deb
 
 ENTRYPOINT [ "tail", "-f", "/dev/null" ]

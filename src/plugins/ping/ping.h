@@ -90,6 +90,10 @@ typedef enum
   ICMP46_ECHO_REPLY_N_NEXT,
 } icmp46_echo_reply_next_t;
 
+extern void set_cli_process_id_by_icmp_id_mt (vlib_main_t * vm, u16 icmp_id, uword cli_process_id);
+extern uword get_cli_process_id_by_icmp_id_mt (vlib_main_t * vm, u16 icmp_id);
+extern void clear_cli_process_id_by_icmp_id_mt (vlib_main_t * vm, u16 icmp_id);
+
 extern clib_error_t *ping_plugin_api_hookup (vlib_main_t *vm);
 extern send_ip46_ping_result_t send_ip4_ping(vlib_main_t * vm,
 	       u32 table_id, ip4_address_t * pa4,

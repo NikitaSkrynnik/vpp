@@ -100,7 +100,7 @@ format_ip46_ping_result (u8 * s, va_list * args)
  */
 
 
-static_always_inline uword
+always_inline uword
 get_cli_process_id_by_icmp_id_mt (vlib_main_t * vm, u16 icmp_id)
 {
   ping_main_t *pm = &ping_main;
@@ -121,7 +121,7 @@ get_cli_process_id_by_icmp_id_mt (vlib_main_t * vm, u16 icmp_id)
 }
 
 
-static_always_inline void
+always_inline void
 set_cli_process_id_by_icmp_id_mt (vlib_main_t * vm, u16 icmp_id,
 				  uword cli_process_id)
 {
@@ -145,7 +145,7 @@ have_found_and_set:
 }
 
 
-static_always_inline void
+always_inline void
 clear_cli_process_id_by_icmp_id_mt (vlib_main_t * vm, u16 icmp_id)
 {
   ping_main_t *pm = &ping_main;
