@@ -45,6 +45,7 @@ define my_ping_ping_reply
   u64 ping_res4;
 };
 
+
 /*
  * Local Variables:
  * eval: (c-set-style "gnu")

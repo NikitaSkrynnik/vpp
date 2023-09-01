@@ -83,6 +83,7 @@ vl_api_my_ping_ping_t_handler (vl_api_my_ping_ping_t *mp)
     f64 sleep_interval;
     f64 time_ping_sent = vlib_time_now (vm);
 
+    vlib_log_notice(pm->log_class, "Sending ping...");
     res = send_ip4_ping(vm, table_id, &dst_addr.ip.ip4, sw_if_index, i, icmp_id, data_len, ping_burst, verbose);
 
     if (i <= 4) results[i-1] = res;
@@ -96,6 +97,8 @@ vl_api_my_ping_ping_t_handler (vl_api_my_ping_ping_t *mp)
       uword event_type, *event_data = 0;
       vlib_process_wait_for_event_or_clock(vm, sleep_interval);
       event_type = vlib_process_get_events(vm, &event_data);
+
+      vlib_log_notice(pm->log_class, "Got event type: %u", event_type);
 
       if (i <= 4) event_types[i-1] = event_type;
       

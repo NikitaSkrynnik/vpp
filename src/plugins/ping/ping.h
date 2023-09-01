@@ -60,6 +60,8 @@ typedef struct ping_main_t
   ping_run_t *active_ping_runs;
   /* a lock held while add/remove/search on active_ping_runs */
   clib_spinlock_t ping_run_check_lock;
+
+  vlib_log_class_t log_class;
 } ping_main_t;
 
 extern ping_main_t ping_main;

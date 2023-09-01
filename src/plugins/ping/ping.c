@@ -100,7 +100,7 @@ format_ip46_ping_result (u8 * s, va_list * args)
  */
 
 
-always_inline uword
+inline uword
 get_cli_process_id_by_icmp_id_mt (vlib_main_t * vm, u16 icmp_id)
 {
   ping_main_t *pm = &ping_main;
@@ -121,7 +121,7 @@ get_cli_process_id_by_icmp_id_mt (vlib_main_t * vm, u16 icmp_id)
 }
 
 
-always_inline void
+inline void
 set_cli_process_id_by_icmp_id_mt (vlib_main_t * vm, u16 icmp_id,
 				  uword cli_process_id)
 {
@@ -145,7 +145,7 @@ have_found_and_set:
 }
 
 
-always_inline void
+inline void
 clear_cli_process_id_by_icmp_id_mt (vlib_main_t * vm, u16 icmp_id)
 {
   ping_main_t *pm = &ping_main;
@@ -1678,6 +1678,7 @@ ping_cli_init (vlib_main_t * vm)
   icmp6_register_type (vm, ICMP6_echo_request,
 		       ip6_icmp_echo_request_node.index);
   
+  pm->log_class = vlib_log_register_class("ping", 0);
   ping_plugin_api_hookup(vm);
 
   return 0;
