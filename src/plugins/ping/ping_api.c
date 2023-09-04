@@ -66,7 +66,6 @@ vl_api_my_ping_ping_t_handler (vl_api_my_ping_ping_t *mp)
   ip_address_t dst_addr = { 0 };
   u32 sw_if_index = ntohl (mp->sw_if_index);
   f64 ping_interval = clib_net_to_host_f64(mp->interval);
-  u32 ping_repeat = ntohl (mp->repeat);
   u32 data_len = PING_DEFAULT_DATA_LEN;
   u32 ping_burst = 1;
   u32 verbose = 0;
