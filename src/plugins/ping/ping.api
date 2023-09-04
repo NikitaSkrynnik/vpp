@@ -36,22 +36,7 @@ define my_ping_ping_reply
   u32 request_count;
   u32 reply_count;
   u32 if_index;
-  u64 event_type1;
-  u64 event_type2;
-  u64 event_type3;
-  u64 event_type4;
-  u64 ping_res1;
-  u64 ping_res2;
-  u64 ping_res3;
-  u64 ping_res4;
 };
-
-autoreply define my_ping_ping_stop
-{
-  u32 client_index;
-  u32 context;
-  u32 ping_id;
-}
 
 /*
  * Local Variables:
