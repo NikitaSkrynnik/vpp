@@ -23,6 +23,7 @@ typedef enum
 {
   PING_RESPONSE_IP6 = 42,
   PING_RESPONSE_IP4,
+  PING_ABORT,
 } ping_response_type_t;
 
 #define foreach_ip46_ping_result                                      \

@@ -43,11 +43,7 @@ vl_api_my_ping_ping_t_handler (vl_api_my_ping_ping_t *mp)
 
   uword curr_proc = vlib_current_process (vm);
 
-  static u32 rand_seed = 0;
-  if (PREDICT_FALSE (!rand_seed))
-    rand_seed = random_default_seed ();
-
-  u16 icmp_id = random_u32 (&rand_seed) & 0xffff;
+  u16 icmp_id = mp->ping_id;
   while (~0 != get_cli_process_id_by_icmp_id_mt (vm, icmp_id))
   {
     vlib_cli_output (vm, "ICMP ID collision at %d, incrementing", icmp_id);
@@ -104,6 +100,9 @@ vl_api_my_ping_ping_t_handler (vl_api_my_ping_ping_t *mp)
       
       if (event_type == ~0)
         break;
+
+      if (event_type == PING_ABORT)
+        goto double_break;
       
       if (event_type == PING_RESPONSE_IP4 || event_type == PING_RESPONSE_IP6)
         n_replies += vec_len(event_data);
@@ -112,6 +111,7 @@ vl_api_my_ping_ping_t_handler (vl_api_my_ping_ping_t *mp)
     }
   }
 
+double_break:
   BAD_SW_IF_INDEX_LABEL;
 
   clear_cli_process_id_by_icmp_id_mt(vm, icmp_id);
@@ -131,6 +131,22 @@ vl_api_my_ping_ping_t_handler (vl_api_my_ping_ping_t *mp)
       rmp->ping_res4 = ntohl(results[3]);
     }));
       
+}
+
+void
+vl_api_my_ping_ping_stop_t_handler (vl_api_my_ping_ping_stop_t *mp)
+{
+  vlib_main_t *vm = vlib_get_main ();
+  ping_main_t *pm = &ping_main;
+  vl_api_my_ping_ping_stop_reply_t *rmp;
+
+  int rv = 0;
+
+  uword cli_process_id = get_cli_process_id_by_icmp_id_mt(vm, mp->ping_id);
+
+  vlib_process_signal_event_mt(vm, cli_process_id, PING_ABORT, 0);
+
+  REPLY_MACRO(VL_API_MY_PING_PING_STOP_REPLY);
 }
 
 /* set tup the API message handling tables */
