@@ -18,22 +18,19 @@ option version = "1.0.0";
 import "vnet/interface_types.api";
 import "vnet/ip/ip_types.api";
 
-define my_ping_ping
+define ping
 {
   u32 client_index;
   u32 context;
   vl_api_address_t address;
-  vl_api_interface_index_t sw_if_index;
-  f64 interval [default=1.0];
+  f64 timeout [default=1.0];
 };
 
-define my_ping_ping_reply
+define ping_reply
 {
   u32 context;
   i32 retval;
-  u32 request_count;
   u32 reply_count;
-  u32 if_index;
 };
 
 /*

@@ -44,32 +44,27 @@ main ()
   if (VAPI_OK != err)
     throw std::runtime_error("connection to VPP failed");
 
-  vapi::My_ping_ping msg(con);
+  vapi::Ping msg(con);
 
   auto &payload = msg.get_request().get_payload();
-  payload.address.af = ADDRESS_IP4;
-  const char ip[] = { 0x0a, 0x0a, 0x02, 0x02 }; // 10.10.2.2
-  std::copy(ip, ip + 4, payload.address.un.ip4);
+  // payload.address.af = ADDRESS_IP4;
+  // const char ip[] = { 0x0a, 0x0a, 0x02, 0x02 }; // 10.10.2.2
+  // std::copy(ip, ip + 4, payload.address.un.ip4);
 
-  payload.sw_if_index = 1;
-  payload.repeat = 1;
+  payload.address.af = ADDRESS_IP6;
+  const unsigned char ip[] = { 
+    0x20, 0x01, 0x0d, 0xb8,
+    0x85, 0xa3, 0x00, 0x00,
+    0x00, 0x00, 0x8a, 0x2e,
+    0x03, 0x70, 0x73, 0x35}; // 2001:0db8:85a3:0000:0000:8a2e:0370:7335
+  std::copy(ip, ip + 16, payload.address.un.ip6);
+
   payload.interval = 5.0;
 
   auto reply = execute(con, msg);
 
   std::cout << "Request Count: " << reply.request_count << std::endl;
   std::cout << "Reply Count: " << reply.reply_count << std::endl;
-  std::cout << "Iface Index: " << reply.if_index << std::endl;
-
-  std::cout << "Event Type 1: " << reply.event_type1 << std::endl;
-  std::cout << "Event Type 2: " << reply.event_type2 << std::endl;
-  std::cout << "Event Type 3: " << reply.event_type3 << std::endl;
-  std::cout << "Event Type 4: " << reply.event_type4 << std::endl;
-
-  std::cout << "Ping Result 1:  " << reply.ping_res1 << std::endl;
-  std::cout << "Ping Result 2:  " << reply.ping_res2 << std::endl;
-  std::cout << "Ping Result 3:  " << reply.ping_res3 << std::endl;
-  std::cout << "Ping Result 4:  " << reply.ping_res4 << std::endl;
  
   con.disconnect();
   std::cerr << "Success" << std::endl;

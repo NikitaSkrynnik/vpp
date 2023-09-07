@@ -102,4 +102,8 @@ extern send_ip46_ping_result_t send_ip4_ping(vlib_main_t * vm,
 	       u32 sw_if_index, u16 seq_host, u16 id_host, u16 data_len,
 	       u32 burst, u8 verbose);
 
+extern send_ip46_ping_result_t send_ip6_ping (vlib_main_t * vm,
+	       u32 table_id, ip6_address_t * pa6,
+	       u32 sw_if_index, u16 seq_host, u16 id_host, u16 data_len,
+	       u32 burst, u8 verbose);
 #endif /* included_ping_ping_h */

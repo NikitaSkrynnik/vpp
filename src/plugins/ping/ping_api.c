@@ -35,11 +35,11 @@
 #include <vlibapi/api_helper_macros.h>
 
 void
-vl_api_my_ping_ping_t_handler (vl_api_my_ping_ping_t *mp)
+vl_api_ping_t_handler (vl_api_ping_t *mp)
 {
   vlib_main_t *vm = vlib_get_main ();
   ping_main_t *pm = &ping_main;
-  vl_api_my_ping_ping_reply_t *rmp;
+  vl_api_ping_reply_t *rmp;
 
   uword curr_proc = vlib_current_process (vm);
 
@@ -59,13 +59,10 @@ vl_api_my_ping_ping_t_handler (vl_api_my_ping_ping_t *mp)
   u32 n_requests = 0;
   u32 n_replies = 0;
 
-  if (mp->sw_if_index != ~0)
-    VALIDATE_SW_IF_INDEX (mp);
-
   u32 table_id = 0;
   ip_address_t dst_addr = { 0 };
-  u32 sw_if_index = ntohl (mp->sw_if_index);
-  f64 ping_interval = clib_net_to_host_f64(mp->interval);
+  u32 sw_if_index = ~0;
+  f64 ping_timeout = clib_net_to_host_f64(mp->timeout);
   u32 data_len = PING_DEFAULT_DATA_LEN;
   u32 ping_burst = 1;
   u32 verbose = 0;
@@ -76,12 +73,16 @@ vl_api_my_ping_ping_t_handler (vl_api_my_ping_ping_t *mp)
   f64 time_ping_sent = vlib_time_now(vm);
 
   vlib_log_notice(pm->log_class, "Sending ping...");
-  res = send_ip4_ping(vm, table_id, &dst_addr.ip.ip4, sw_if_index, 1, icmp_id, data_len, ping_burst, verbose);
+
+  if (dst_addr.version == AF_IP4)
+    res = send_ip4_ping(vm, table_id, &dst_addr.ip.ip4, sw_if_index, 1, icmp_id, data_len, ping_burst, verbose);
+  else
+    res = send_ip6_ping(vm, table_id, &dst_addr.ip.ip6, sw_if_index, 1, icmp_id, data_len, ping_burst, verbose);
 
   if (SEND_PING_OK == res)
     n_requests = 1;
   
-  while ((sleep_interval = time_ping_sent + ping_interval - vlib_time_now(vm)) > 0.0)
+  while ((sleep_interval = time_ping_sent + ping_timeout - vlib_time_now(vm)) > 0.0)
   {
     vlib_process_wait_for_event_or_clock(vm, sleep_interval);
     uword event_type = vlib_process_get_events(vm, 0);
@@ -95,15 +96,10 @@ vl_api_my_ping_ping_t_handler (vl_api_my_ping_ping_t *mp)
     }
   }
 
-  BAD_SW_IF_INDEX_LABEL;
-
   clear_cli_process_id_by_icmp_id_mt(vm, icmp_id);
 
-  REPLY_MACRO2(VL_API_MY_PING_PING_REPLY, (
-    { 
-      rmp->request_count = ntohl(n_requests); 
+  REPLY_MACRO2(VL_API_PING_REPLY, ({ 
       rmp->reply_count = ntohl(n_replies); 
-      rmp->if_index = ntohl(sw_if_index);
     }));
       
 }
