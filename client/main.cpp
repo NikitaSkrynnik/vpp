@@ -1,5 +1,8 @@
 #include <iostream>
 #include <algorithm>
+#include <functional>
+#include <chrono>
+#include <thread>
 #include <vapi/vapi.h>
 #include <vapi/vpe.api.vapi.hpp>
 DEFINE_VAPI_MSG_IDS_VPE_API_JSON
@@ -31,6 +34,7 @@ execute (vapi::Connection &con, MyRequest &req)
 }
 
 
+
 int
 main ()
 {
@@ -44,32 +48,33 @@ main ()
   if (VAPI_OK != err)
     throw std::runtime_error("connection to VPP failed");
 
-  vapi::My_ping_ping msg(con);
+  vapi::Want_ping_events msg(con);
 
   auto &payload = msg.get_request().get_payload();
   payload.address.af = ADDRESS_IP4;
   const char ip[] = { 0x0a, 0x0a, 0x02, 0x02 }; // 10.10.2.2
   std::copy(ip, ip + 4, payload.address.un.ip4);
 
-  payload.sw_if_index = 1;
-  payload.repeat = 1;
-  payload.interval = 5.0;
+  payload.interval = 1.0;
+  payload.repeat = 4;
 
   auto reply = execute(con, msg);
 
   std::cout << "Request Count: " << reply.request_count << std::endl;
   std::cout << "Reply Count: " << reply.reply_count << std::endl;
-  std::cout << "Iface Index: " << reply.if_index << std::endl;
 
-  std::cout << "Event Type 1: " << reply.event_type1 << std::endl;
-  std::cout << "Event Type 2: " << reply.event_type2 << std::endl;
-  std::cout << "Event Type 3: " << reply.event_type3 << std::endl;
-  std::cout << "Event Type 4: " << reply.event_type4 << std::endl;
+  vapi::Event_registration<vapi::Ping_event> er(con, nullptr);
 
-  std::cout << "Ping Result 1:  " << reply.ping_res1 << std::endl;
-  std::cout << "Ping Result 2:  " << reply.ping_res2 << std::endl;
-  std::cout << "Ping Result 3:  " << reply.ping_res3 << std::endl;
-  std::cout << "Ping Result 4:  " << reply.ping_res4 << std::endl;
+  std::this_thread::sleep_for(std::chrono::milliseconds(10000));
+
+  auto& res = er.get_result_set();
+
+  std::cout << "res.size " << res.size() << std::endl;
+
+  for (auto& ev : res) {
+      auto& payload = ev.get_payload();
+      std::cout << "Payload.pid" << payload.pid << std::endl;
+    }
  
   con.disconnect();
   std::cerr << "Success" << std::endl;
