@@ -15,7 +15,6 @@
 #ifndef included_ping_ping_h
 #define included_ping_ping_h
 
-
 #include <vnet/ip/ip.h>
 
 #include <vnet/ip/lookup.h>
@@ -24,6 +23,7 @@ typedef enum
 {
   PING_RESPONSE_IP6 = 42,
   PING_RESPONSE_IP4,
+  PING_ABORT,
 } ping_response_type_t;
 
 #define foreach_ip46_ping_result                                      \
@@ -52,12 +52,17 @@ typedef struct ping_run_t
 
 typedef struct ping_main_t
 {
+  /* API message ID base */
+  u16 msg_id_base;
+
   ip6_main_t *ip6_main;
   ip4_main_t *ip4_main;
   /* a vector of current ping runs. */
   ping_run_t *active_ping_runs;
   /* a lock held while add/remove/search on active_ping_runs */
   clib_spinlock_t ping_run_check_lock;
+
+  vlib_log_class_t log_class;
 } ping_main_t;
 
 extern ping_main_t ping_main;
@@ -87,5 +92,15 @@ typedef enum
   ICMP46_ECHO_REPLY_NEXT_PUNT,
   ICMP46_ECHO_REPLY_N_NEXT,
 } icmp46_echo_reply_next_t;
+
+extern void set_cli_process_id_by_icmp_id_mt (vlib_main_t * vm, u16 icmp_id, uword cli_process_id);
+extern uword get_cli_process_id_by_icmp_id_mt (vlib_main_t * vm, u16 icmp_id);
+extern void clear_cli_process_id_by_icmp_id_mt (vlib_main_t * vm, u16 icmp_id);
+
+extern clib_error_t *ping_plugin_api_hookup (vlib_main_t *vm);
+extern send_ip46_ping_result_t send_ip4_ping(vlib_main_t * vm,
+	       u32 table_id, ip4_address_t * pa4,
+	       u32 sw_if_index, u16 seq_host, u16 id_host, u16 data_len,
+	       u32 burst, u8 verbose);
 
 #endif /* included_ping_ping_h */
