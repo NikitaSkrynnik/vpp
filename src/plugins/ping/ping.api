@@ -39,7 +39,8 @@ define ping_event
 {
   u32 client_index;
   u32 pid;
-  u32 my;
+  u32 request_count;
+  u32 reply_count;
 };
 
 service {

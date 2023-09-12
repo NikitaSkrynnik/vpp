@@ -34,7 +34,7 @@
 #define REPLY_MSG_ID_BASE pm->msg_id_base
 #include <vlibapi/api_helper_macros.h>
 
-static void ping_api_send_ping_event (vl_api_want_ping_events_t* mp)
+static void ping_api_send_ping_event (vl_api_want_ping_events_t* mp, u32 request_count, u32 reply_count)
 {
   ping_main_t *pm = &ping_main;
 
@@ -47,7 +47,8 @@ static void ping_api_send_ping_event (vl_api_want_ping_events_t* mp)
   clib_memset(e, 0, sizeof (*e));
 
   e->_vl_msg_id = htons (VL_API_PING_EVENT + pm->msg_id_base);
-  e->my = htonl (12345);
+  e->request_count = request_count;
+  e->reply_count = reply_count;
 
   vl_api_send_msg (rp, (u8 *) e);
 }
@@ -74,8 +75,8 @@ void vl_api_want_ping_events_t_handler (vl_api_want_ping_events_t *mp)
   set_cli_process_id_by_icmp_id_mt (vm, icmp_id, curr_proc);
 
   int rv = 0;
-  u32 n_requests = 0;
-  u32 n_replies = 0;
+  u32 request_count = 0;
+  u32 reply_count = 0;
 
   u32 table_id = 0;
   ip_address_t dst_addr = { 0 };
@@ -87,7 +88,7 @@ void vl_api_want_ping_events_t_handler (vl_api_want_ping_events_t *mp)
   u32 verbose = 0;
   ip_address_decode2(&mp->address, &dst_addr);
 
-  vlib_log_notice("Getting RP");
+  vlib_log_notice(pm->log_class, "Getting RP");
 
   vl_api_registration_t *rp;
   rp = vl_api_client_index_to_registration (mp->client_index);
@@ -106,7 +107,6 @@ void vl_api_want_ping_events_t_handler (vl_api_want_ping_events_t *mp)
   vl_api_send_msg (rp, (u8 *) rmp);
 
   vlib_log_notice(pm->log_class, "Starting pining...");
-
   int i;
   send_ip46_ping_result_t res = SEND_PING_OK;
   for (i = 1; i <= ping_repeat; i++)
@@ -118,7 +118,7 @@ void vl_api_want_ping_events_t_handler (vl_api_want_ping_events_t *mp)
     res = send_ip4_ping(vm, table_id, &dst_addr.ip.ip4, sw_if_index, i, icmp_id, data_len, ping_burst, verbose);
 
     if (SEND_PING_OK == res)
-      n_requests += 1;
+      request_count += 1;
     
     while ((sleep_interval = time_ping_sent + ping_interval - vlib_time_now(vm)) > 0.0)
     {
@@ -126,16 +126,17 @@ void vl_api_want_ping_events_t_handler (vl_api_want_ping_events_t *mp)
       vlib_process_wait_for_event_or_clock(vm, sleep_interval);
       event_type = vlib_process_get_events(vm, 0);
 
-      ping_api_send_ping_event(mp);
       vlib_log_notice(pm->log_class, "Got event type: %u", event_type);
 
       if (event_type == ~0)
         break;
       
       if (event_type == PING_RESPONSE_IP4 || event_type == PING_RESPONSE_IP6)
-        n_replies += 1;
+        reply_count += 1;
     }
   }
+
+  ping_api_send_ping_event(mp, request_count, reply_count);
 
   clear_cli_process_id_by_icmp_id_mt(vm, icmp_id);
 }
