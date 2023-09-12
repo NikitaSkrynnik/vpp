@@ -23,7 +23,6 @@ typedef enum
 {
   PING_RESPONSE_IP6 = 42,
   PING_RESPONSE_IP4,
-  PING_ABORT,
 } ping_response_type_t;
 
 #define foreach_ip46_ping_result                                      \
@@ -100,6 +99,10 @@ extern void clear_cli_process_id_by_icmp_id_mt (vlib_main_t * vm, u16 icmp_id);
 extern clib_error_t *ping_plugin_api_hookup (vlib_main_t *vm);
 extern send_ip46_ping_result_t send_ip4_ping(vlib_main_t * vm,
 	       u32 table_id, ip4_address_t * pa4,
+	       u32 sw_if_index, u16 seq_host, u16 id_host, u16 data_len,
+	       u32 burst, u8 verbose);
+extern send_ip46_ping_result_t send_ip6_ping(vlib_main_t * vm,
+	       u32 table_id, ip6_address_t * pa6,
 	       u32 sw_if_index, u16 seq_host, u16 id_host, u16 data_len,
 	       u32 burst, u8 verbose);
 

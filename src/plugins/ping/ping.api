@@ -18,7 +18,7 @@ option version = "1.0.0";
 import "vnet/interface_types.api";
 import "vnet/ip/ip_types.api";
 
-define want_ping_events
+autoreply define want_ping_events
 {
   u32 client_index;
   u32 context;
@@ -27,25 +27,16 @@ define want_ping_events
   f64 interval [default=1.0];
 };
 
-define want_ping_events_reply
-{
-  u32 context;
-  i32 retval;
-  u32 request_count;
-  u32 reply_count;
-};
-
-define ping_event
+define ping_finished_event
 {
   u32 client_index;
-  u32 pid;
   u32 request_count;
   u32 reply_count;
 };
 
 service {
   rpc want_ping_events returns want_ping_events_reply
-    events ping_event;
+    events ping_finished_event;
 };
 
 /*

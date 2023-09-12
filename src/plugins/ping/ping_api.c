@@ -43,10 +43,10 @@ static void ping_api_send_ping_event (vl_api_want_ping_events_t* mp, u32 request
 
   vlib_log_notice(pm->log_class, "Sending event to client");
 
-  vl_api_ping_event_t *e = vl_msg_api_alloc (sizeof (*e));
+  vl_api_ping_finished_event_t *e = vl_msg_api_alloc (sizeof (*e));
   clib_memset(e, 0, sizeof (*e));
 
-  e->_vl_msg_id = htons (VL_API_PING_EVENT + pm->msg_id_base);
+  e->_vl_msg_id = htons (VL_API_PING_FINISHED_EVENT + pm->msg_id_base);
   e->request_count = request_count;
   e->reply_count = reply_count;
 
@@ -102,8 +102,6 @@ void vl_api_want_ping_events_t_handler (vl_api_want_ping_events_t *mp)
   rmp->_vl_msg_id = htons ((VL_API_WANT_PING_EVENTS_REPLY) + (REPLY_MSG_ID_BASE));
   rmp->context = mp->context;
   rmp->retval = ntohl (rv);   
-  rmp->request_count = ntohl(100);
-  rmp->reply_count = ntohl(500);
   vl_api_send_msg (rp, (u8 *) rmp);
 
   vlib_log_notice(pm->log_class, "Starting pining...");
@@ -115,7 +113,11 @@ void vl_api_want_ping_events_t_handler (vl_api_want_ping_events_t *mp)
     f64 time_ping_sent = vlib_time_now (vm);
 
     vlib_log_notice(pm->log_class, "Sending ping...");
-    res = send_ip4_ping(vm, table_id, &dst_addr.ip.ip4, sw_if_index, i, icmp_id, data_len, ping_burst, verbose);
+
+    if (dst_addr.version == AF_IP4)
+      res = send_ip4_ping(vm, table_id, &dst_addr.ip.ip4, sw_if_index, i, icmp_id, data_len, ping_burst, verbose);
+    else
+      res = send_ip6_ping(vm, table_id, &dst_addr.ip.ip6, sw_if_index, i, icmp_id, data_len, ping_burst, verbose);
 
     if (SEND_PING_OK == res)
       request_count += 1;
