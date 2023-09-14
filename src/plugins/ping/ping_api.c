@@ -47,8 +47,8 @@ static void ping_api_send_ping_event (vl_api_want_ping_events_t* mp, u32 request
   clib_memset(e, 0, sizeof (*e));
 
   e->_vl_msg_id = htons (VL_API_PING_FINISHED_EVENT + pm->msg_id_base);
-  e->request_count = request_count;
-  e->reply_count = reply_count;
+  e->request_count = htonl (request_count);
+  e->reply_count = htonl (reply_count);
 
   vl_api_send_msg (rp, (u8 *) e);
 }
